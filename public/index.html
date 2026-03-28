@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>SpiderWeb_Bot — Instant WhatsApp Bot</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --g: #25d366;
+  --gd: #128c7e;
+  --spider: #8b5cf6;
+  --web-glow: rgba(139, 92, 246, 0.4);
+  --dark-bg: #05070a;
+  --card-glass: rgba(10, 14, 18, 0.75);
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0c12 0%, #030507 100%);
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, 'SF Pro Text', sans-serif;
+  color: #edf2f7;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* spiderweb pattern background */
+.bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+.bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(circle at 20% 40%, rgba(139, 92, 246, 0.08) 1px, transparent 1px),
+    radial-gradient(circle at 80% 70%, rgba(37, 211, 102, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px, 60px 60px;
+}
+
+.bg::after {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
+  background: repeating-linear-gradient(45deg, 
+    transparent, 
+    transparent 40px, 
+    rgba(139, 92, 246, 0.03) 40px, 
+    rgba(139, 92, 246, 0.03) 80px);
+  animation: webMove 30s linear infinite;
+}
+
+@keyframes webMove {
+  0% { transform: translateX(0) translateY(0); }
+  100% { transform: translateX(80px) translateY(80px); }
+}
+
+/* floating orbs */
+.bg .orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.3;
+  animation: floatOrb 20s infinite alternate;
+}
+
+@keyframes floatOrb {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(60px, -40px) scale(1.2); }
+}
+
+.wrap {
+  position: relative;
+  z-index: 2;
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 20px 16px 48px;
+}
+
+/* header with spider theme */
+.header {
+  text-align: center;
+  padding: 32px 0 28px;
+  position: relative;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(145deg, #1a1e2a, #0f1119);
+  border-radius: 60% 40% 50% 50% / 45% 40% 60% 55%;
+  margin-bottom: 20px;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(139, 92, 246, 0.3), 0 0 0 5px rgba(37, 211, 102, 0.1);
+  animation: spiderGlow 3s ease-in-out infinite;
+}
+
+@keyframes spiderGlow {
+  0%, 100% { box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 0 2px rgba(139, 92, 246, 0.3), 0 0 0 5px rgba(37,211,102,0.1); }
+  50% { box-shadow: 0 20px 50px rgba(139, 92, 246, 0.3), 0 0 0 3px rgba(139, 92, 246, 0.6), 0 0 0 8px rgba(37,211,102,0.2); }
+}
+
+.logo svg {
+  width: 56px;
+  height: 56px;
+  filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.6));
+}
+
+h1 {
+  font-size: 34px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffffff 20%, #8b5cf6 50%, #25d366 85%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.sub {
+  color: #8a99aa;
+  font-size: 14px;
+  margin-bottom: 18px;
+  font-weight: 500;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 40px;
+  padding: 6px 20px;
+  font-size: 12px;
+  color: #c084fc;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background: #25d366;
+  border-radius: 50%;
+  animation: blink 1.5s infinite;
+  box-shadow: 0 0 6px #25d366;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.9); }
+}
+
+.stats-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.stat-pill {
+  background: rgba(15, 25, 35, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 30px;
+  padding: 6px 18px;
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.stat-pill b {
+  color: #c084fc;
+  font-weight: 700;
+}
+
+/* steps enhanced */
+.steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 28px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 12px 16px;
+  border-radius: 80px;
+  backdrop-filter: blur(8px);
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5563;
+  transition: all 0.3s;
+}
+
+.step.active {
+  color: #c084fc;
+  text-shadow: 0 0 6px rgba(139, 92, 246, 0.5);
+}
+
+.step.done {
+  color: #25d366;
+}
+
+.snum {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid #2d3748;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.step.active .snum,
+.step.done .snum {
+  background: linear-gradient(135deg, #8b5cf6, #25d366);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.6);
+}
+
+.sline {
+  width: 55px;
+  height: 2px;
+  background: #2d3748;
+  margin: 0 4px;
+  transition: all 0.3s;
+  border-radius: 2px;
+}
+
+.sline.done {
+  background: linear-gradient(90deg, #8b5cf6, #25d366);
+}
+
+/* glassmorphic cards */
+.card {
+  background: rgba(12, 18, 24, 0.7);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 32px;
+  padding: 28px;
+  margin-bottom: 18px;
+  transition: all 0.3s;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.card-title {
+  font-size: 12px;
+  color: #8b5cf6;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  color: #9ca3af;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.iw {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.iw .flag {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 22px;
+  filter: drop-shadow(0 0 2px #8b5cf6);
+}
+
+input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1.5px solid rgba(139, 92, 246, 0.3);
+  border-radius: 20px;
+  padding: 15px 16px 15px 54px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  outline: none;
+  transition: all 0.25s;
+}
+
+input:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2);
+  background: rgba(0, 0, 0, 0.7);
+}
+
+input::placeholder {
+  color: #3a4452;
+  font-weight: 400;
+}
+
+.btn {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(115deg, #8b5cf6, #25d366);
+  border: none;
+  border-radius: 24px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 35px rgba(139, 92, 246, 0.4);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.spin {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* code box with spider theme */
+.code-box {
+  background: linear-gradient(145deg, rgba(139, 92, 246, 0.08), rgba(37, 211, 102, 0.05));
+  border: 1.5px solid rgba(139, 92, 246, 0.4);
+  border-radius: 32px;
+  padding: 28px;
+  text-align: center;
+  margin-bottom: 18px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.code-lbl {
+  font-size: 10px;
+  color: #c084fc;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.code-val {
+  font-size: 48px;
+  font-weight: 900;
+  letter-spacing: 12px;
+  font-family: 'SF Mono', 'Courier New', monospace;
+  color: #fff;
+  text-shadow: 0 0 20px #8b5cf6, 0 0 5px #25d366;
+  margin-bottom: 24px;
+  background: rgba(0,0,0,0.4);
+  padding: 12px;
+  border-radius: 24px;
+}
+
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.5);
+  border-radius: 40px;
+  padding: 10px 28px;
+  color: #c084fc;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copy-btn:hover {
+  background: rgba(139, 92, 246, 0.3);
+  transform: scale(1.02);
+}
+
+.timer-wrap {
+  margin-top: 24px;
+}
+
+.timer-bar {
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.timer-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #25d366);
+  border-radius: 6px;
+  transition: width 0.8s linear;
+  box-shadow: 0 0 8px #8b5cf6;
+}
+
+.timer-txt {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #7e8a98;
+  font-weight: 500;
+}
+
+.timer-txt b {
+  color: #c084fc;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+/* how-to steps */
+.how {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 24px;
+  padding: 18px;
+}
+
+.hs {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.hs:last-child {
+  border-bottom: none;
+}
+
+.hn {
+  width: 26px;
+  height: 26px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(37, 211, 102, 0.1));
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  color: #c084fc;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ht {
+  font-size: 13px;
+  color: #b9c7d9;
+  line-height: 1.5;
+}
+
+.ht b {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* success area */
+.success-box {
+  background: linear-gradient(145deg, rgba(139, 92, 246, 0.08), rgba(37, 211, 102, 0.05));
+  border: 1.5px solid rgba(139, 92, 246, 0.4);
+  border-radius: 32px;
+  padding: 32px;
+  text-align: center;
+}
+
+.s-icon {
+  font-size: 68px;
+  margin-bottom: 16px;
+  animation: pop 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
+  filter: drop-shadow(0 0 12px #8b5cf6);
+}
+
+@keyframes pop {
+  0% { transform: scale(0); opacity: 0; }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.s-title {
+  font-size: 24px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 12px;
+}
+
+.s-sub {
+  font-size: 14px;
+  color: #9aaebf;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.s-cmds {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.s-cmds p {
+  font-size: 13px;
+  color: #b9c7d9;
+  line-height: 2;
+}
+
+.s-cmds b {
+  color: #c084fc;
+}
+
+.s-cmds code {
+  background: rgba(139, 92, 246, 0.2);
+  color: #25d366;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: monospace;
+}
+
+.feats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.feat {
+  background: rgba(12, 18, 24, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 24px;
+  padding: 16px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.feat:hover {
+  border-color: rgba(139, 92, 246, 0.5);
+  transform: translateY(-2px);
+}
+
+.fi {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.ft {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.fd {
+  font-size: 10px;
+  color: #7f8c8d;
+  margin-top: 5px;
+}
+
+.err {
+  background: rgba(231, 76, 60, 0.1);
+  border: 1.5px solid rgba(231, 76, 60, 0.4);
+  border-radius: 20px;
+  padding: 14px;
+  color: #ff8a7a;
+  font-size: 13px;
+  margin-top: 14px;
+  display: none;
+  font-weight: 500;
+}
+
+footer {
+  text-align: center;
+  padding-top: 20px;
+  font-size: 11px;
+  color: #4a5568;
+  border-top: 1px solid rgba(139, 92, 246, 0.1);
+  margin-top: 12px;
+}
+
+/* spider web decorative elements */
+.web-deco {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  font-size: 40px;
+  opacity: 0.1;
+  pointer-events: none;
+  z-index: 1;
+  transform: rotate(15deg);
+}
+</style>
+</head>
+<body>
+<div class="bg">
+  <div class="orb" style="width: 300px; height: 300px; background: #8b5cf6; top: -100px; right: -100px; opacity: 0.15;"></div>
+  <div class="orb" style="width: 400px; height: 400px; background: #25d366; bottom: -150px; left: -150px; opacity: 0.1;"></div>
+</div>
+<div class="wrap">
+  <div class="header">
+    <div class="logo">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="42" stroke="url(#gradSpider)" stroke-width="2.5" fill="rgba(0,0,0,0.3)"/>
+        <path d="M50 20 L50 80 M20 50 L80 50 M35 35 L65 65 M65 35 L35 65" stroke="url(#gradSpider)" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="50" cy="50" r="12" fill="url(#gradSpider)" stroke="white" stroke-width="1.5"/>
+        <circle cx="38" cy="38" r="3" fill="#fff" opacity="0.8"/>
+        <circle cx="62" cy="38" r="3" fill="#fff" opacity="0.8"/>
+        <path d="M44 58 Q50 66 56 58" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <defs>
+          <linearGradient id="gradSpider" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#8b5cf6"/>
+            <stop offset="100%" stop-color="#25d366"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <h1>SpiderWeb_Bot</h1>
+    <p class="sub">Weave your WhatsApp automation — instant pairing</p>
+    <div class="badge"><div class="dot"></div> Web Active • Spider Ready</div>
+    <div class="stats-row">
+      <div class="stat-pill">🕷️ <b id="stat-total">...</b> bots online</div>
+      <div class="stat-pill">⚡ <b>100+</b> commands</div>
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step active" id="st1"><div class="snum">1</div><span>Number</span></div>
+    <div class="sline" id="sl1"></div>
+    <div class="step" id="st2"><div class="snum">2</div><span>Code</span></div>
+    <div class="sline" id="sl2"></div>
+    <div class="step" id="st3"><div class="snum">✓</div><span>Live!</span></div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div id="sec1">
+    <div class="card">
+      <div class="card-title">🕸️ Enter WhatsApp Number</div>
+      <label>International format — no + or spaces</label>
+      <div class="iw">
+        <span class="flag">🕷️</span>
+        <input type="text" id="phone" placeholder="e.g. 263788114185" maxlength="15" inputmode="numeric"/>
+      </div>
+      <button class="btn" id="pbtn" onclick="getCode()">
+        <span>Deploy SpiderBot</span><span>⚡</span>
+      </button>
+      <div class="err" id="e1"></div>
+    </div>
+    <div class="feats">
+      <div class="feat"><div class="fi">🕸️</div><div class="ft">Instant Web</div><div class="fd">Pair in seconds</div></div>
+      <div class="feat"><div class="fi">🔮</div><div class="ft">Spider Shield</div><div class="fd">Secure encryption</div></div>
+      <div class="feat"><div class="fi">🤖</div><div class="ft">100+ Modules</div><div class="fd">AI, media, tools</div></div>
+      <div class="feat"><div class="fi">🌐</div><div class="ft">24/7 Uptime</div><div class="fd">Always crawling</div></div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div id="sec2" style="display:none">
+    <div class="card">
+      <div class="card-title">🔐 Enter Pairing Code in WhatsApp</div>
+      <div class="code-box">
+        <div class="code-lbl">Spider Pair Code</div>
+        <div class="code-val" id="cval">----</div>
+        <button class="copy-btn" onclick="cpCode()">📋 Copy Code</button>
+        <div class="timer-wrap">
+          <div class="timer-bar"><div class="timer-fill" id="tfill" style="width:100%"></div></div>
+          <div class="timer-txt"><span>🕷️ Time to connect</span><b id="tcnt">5:00</b></div>
+        </div>
+      </div>
+      <div class="how">
+        <div class="hs"><div class="hn">1</div><div class="ht">Open <b>WhatsApp</b> on your phone</div></div>
+        <div class="hs"><div class="hn">2</div><div class="ht">Go to <b>Settings → Linked Devices</b></div></div>
+        <div class="hs"><div class="hn">3</div><div class="ht">Tap <b>Link a Device</b></div></div>
+        <div class="hs"><div class="hn">4</div><div class="ht">Select <b>Link with phone number</b></div></div>
+        <div class="hs"><div class="hn">5</div><div class="ht">Enter the <b>8-digit code</b> — Spider connects!</div></div>
+      </div>
+      <div class="err" id="e2" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- STEP 3: SUCCESS -->
+  <div id="sec3" style="display:none">
+    <div class="card">
+      <div class="success-box">
+        <div class="s-icon">🕷️✨</div>
+        <div class="s-title">SpiderWeb_Bot is LIVE!</div>
+        <div class="s-sub">
+          Your bot is now weaving automation.<br/>
+          Check WhatsApp — a welcome message awaits!
+        </div>
+        <div class="s-cmds">
+          <p>
+            <b>⚡ Spider Commands:</b><br/>
+            <code>.help</code> — full command web<br/>
+            <code>.ai hello</code> — AI spider mind<br/>
+            <code>.weather</code> — forecast<br/>
+            <code>.sticker</code> — instant stickers<br/>
+            <code>.mode private</code> — private mode<br/>
+            <code>.ping</code> — web status
+          </p>
+        </div>
+        <button onclick="reset()" style="width:100%;padding:14px;background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(37,211,102,0.1));border:1px solid rgba(139,92,246,0.5);color:#c084fc;border-radius:28px;cursor:pointer;font-size:13px;font-weight:700;transition:0.2s">
+          🕸️ Pair another number
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<footer>SpiderWeb_Bot v3.0 • Weaving WhatsApp • 100+ commands</footer>
+
+<script>
+const TOTAL_SECS = 300;
+let phone='', code='', tiv=null, piv=null, secsLeft=TOTAL_SECS;
+
+fetch('/stats').then(r=>r.json()).then(d=>{
+  document.getElementById('stat-total').textContent = d.active||d.total||0;
+}).catch(()=>{ document.getElementById('stat-total').textContent='0'; });
+
+function step(n){
+  for(let i=1;i<=3;i++){
+    document.getElementById('st'+i).className='step'+(i<n?' done':i===n?' active':'');
+    const l=document.getElementById('sl'+i);
+    if(l) l.className='sline'+(i<n?' done':'');
+  }
+}
+function show(id){['sec1','sec2','sec3'].forEach(s=>document.getElementById(s).style.display=s===id?'block':'none');}
+function err(id,msg){const e=document.getElementById(id);e.textContent='❌ '+msg;e.style.display='block';}
+function noerr(id){document.getElementById(id).style.display='none';}
+function fmtTime(s){const m=Math.floor(s/60);const sc=s%60;return `${m}:${sc.toString().padStart(2,'0')}`;}
+
+async function getCode(){
+  const input=document.getElementById('phone');
+  phone=input.value.trim().replace(/[^0-9]/g,'');
+  noerr('e1');
+  if(!phone||phone.length<7||phone.length>15){err('e1','Enter a valid international number e.g. 263788114185');return;}
+  const btn=document.getElementById('pbtn');
+  btn.disabled=true;
+  btn.innerHTML='<div class="spin"></div><span>Weaving...</span>';
+  try{
+    const res=await fetch('/pair',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone})});
+    const d=await res.json();
+    if(!res.ok||d.error){err('e1',d.error||'Something went wrong.');btn.disabled=false;btn.innerHTML='<span>Deploy SpiderBot</span><span>⚡</span>';return;}
+    if(d.status==='already_connected'){show('sec3');step(3);return;}
+    code=d.code;
+    document.getElementById('cval').textContent=code;
+    show('sec2');step(2);
+    startTimer();startPoll(phone);
+  }catch(e){err('e1','Cannot reach server.');btn.disabled=false;btn.innerHTML='<span>Deploy SpiderBot</span><span>⚡</span>';}
+}
+
+function startTimer(){
+  secsLeft=TOTAL_SECS;
+  if(tiv)clearInterval(tiv);
+  updateTimer();
+  tiv=setInterval(()=>{
+    secsLeft--;
+    updateTimer();
+    if(secsLeft<=0){
+      clearInterval(tiv);
+      document.querySelector('.timer-txt').innerHTML='<span style="color:#e74c3c">⚠️ Code expired</span><span style="color:#c084fc;cursor:pointer" onclick="reset()">Retry →</span>';
+    }
+  },1000);
+}
+
+function updateTimer(){
+  document.getElementById('tcnt').textContent=fmtTime(secsLeft);
+  const f=document.getElementById('tfill');
+  f.style.width=(secsLeft/TOTAL_SECS*100)+'%';
+  f.style.background=secsLeft>60?'linear-gradient(90deg,#8b5cf6,#25d366)':secsLeft>30?'#f39c12':'#e74c3c';
+}
+
+function startPoll(p){
+  if(piv)clearInterval(piv);
+  let n=0;
+  piv=setInterval(async()=>{
+    n++;if(n>120){clearInterval(piv);return;}
+    try{
+      const r=await fetch('/status/'+p);
+      const d=await r.json();
+      if(d.status==='connected'){
+        clearInterval(piv);clearInterval(tiv);
+        show('sec3');step(3);
+        fetch('/stats').then(r=>r.json()).then(d=>{document.getElementById('stat-total').textContent=d.active||d.total||0;}).catch(()=>{});
+      }
+    }catch{}
+  },3000);
+}
+
+function cpCode(){
+  if(!code)return;
+  navigator.clipboard.writeText(code).then(()=>{
+    const b=document.querySelector('.copy-btn');
+    if(b){b.innerHTML='✅ Copied!';setTimeout(()=>b.innerHTML='📋 Copy Code',2000);}
+  });
+}
+
+function reset(){
+  phone='';code='';
+  if(tiv)clearInterval(tiv);
+  if(piv)clearInterval(piv);
+  show('sec1');step(1);
+  document.getElementById('phone').value='';
+  document.getElementById('pbtn').disabled=false;
+  document.getElementById('pbtn').innerHTML='<span>Deploy SpiderBot</span><span>⚡</span>';
+  noerr('e1');
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  show('sec1');
+  document.getElementById('phone').addEventListener('keydown',e=>{if(e.key==='Enter')getCode();});
+});
+</script>
+</body>
+</html>
